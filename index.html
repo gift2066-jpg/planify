@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planify</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#08090f;--s1:#0f1117;--s2:#13151f;--bd:#1e2235;--bd2:#2a2f45;
+--tx:#e2e8f0;--t2:#8892b0;--t3:#4a5278;
+--ac:#5b7ff7;--ac2:#a78bfa;--gn:#3ecf8e;--rd:#f87171;
+--fn:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+body{background:var(--bg);color:var(--tx);font-family:var(--fn);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── 뷰 전환 ── */
+.view{display:none;flex:1;overflow:hidden}
+.view.on{display:flex;flex-direction:column}
+#vList.on{display:flex}
+
+/* ══════════════════════════════
+   기획서 리스트
+══════════════════════════════ */
+#vList{flex-direction:column;overflow-y:auto;background:var(--bg)}
+.lhd{padding:32px 36px 0;display:flex;align-items:flex-end;justify-content:space-between;flex-shrink:0}
+.lhd-logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--ac),var(--ac2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.lhd-sub{font-size:12px;color:var(--t3)}
+.lnew{padding:9px 18px;border-radius:8px;background:linear-gradient(135deg,var(--ac),#7c5cf7);border:none;color:#fff;font-size:12px;font-weight:700;font-family:var(--fn);cursor:pointer;transition:.2s;box-shadow:0 4px 16px rgba(91,127,247,.3)}
+.lnew:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(91,127,247,.45)}
+.lgrid{padding:24px 36px 36px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.lcard{background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:20px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.lcard:hover{border-color:rgba(91,127,247,.4);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.4)}
+.lcard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),var(--ac2));opacity:0;transition:.2s}
+.lcard:hover::after{opacity:1}
+.lcard-ico{font-size:24px;margin-bottom:12px}
+.lcard-name{font-size:14px;font-weight:700;margin-bottom:3px;color:var(--tx)}
+.lcard-desc{font-size:11px;color:var(--t3);margin-bottom:14px;min-height:14px}
+.lcard-foot{display:flex;justify-content:space-between;align-items:center}
+.lcard-cnt{font-size:10px;color:var(--t3);background:var(--bg);padding:2px 8px;border-radius:4px}
+.lcard-date{font-size:10px;color:var(--t3)}
+.lcard-acts{position:absolute;top:10px;right:10px;display:flex;gap:3px;opacity:0;transition:.15s}
+.lcard:hover .lcard-acts{opacity:1}
+.lact{width:24px;height:24px;border-radius:5px;background:var(--s2);border:1px solid var(--bd);color:var(--t2);font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.lact:hover{background:var(--bd2);color:var(--tx)}
+.lact.del:hover{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.3);color:var(--rd)}
+.lempty{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--t3)}
+.lempty-ico{font-size:40px;margin-bottom:12px;opacity:.3}
+
+/* ══════════════════════════════
+   기획서 상세 (3컬럼)
+══════════════════════════════ */
+#vApp{flex-direction:row}
+/* 좌측 네비 */
+.nav{width:220px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.nhd{padding:12px 12px 8px;flex-shrink:0;border-bottom:1px solid var(--bd)}
+.nhd-top{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.nback{background:none;border:none;color:var(--t2);cursor:pointer;font-size:16px;padding:2px 4px;flex-shrink:0;transition:.15s}
+.nback:hover{color:var(--tx)}
+.nlogo{font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.npname{font-size:13px;font-weight:700;color:var(--tx);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.npname:hover{color:var(--ac)}
+.nbtns{display:flex;gap:4px}
+.nadd{flex:1;padding:5px 8px;border-radius:6px;background:linear-gradient(135deg,var(--ac),#7c5cf7);border:none;color:#fff;font-size:11px;font-weight:700;font-family:var(--fn);cursor:pointer;transition:.15s}
+.nadd:hover{opacity:.85}
+.ngrp{padding:5px 8px;border-radius:6px;background:var(--s2);border:1px solid var(--bd);color:var(--t2);font-size:11px;font-family:var(--fn);cursor:pointer;transition:.15s}
+.ngrp:hover{border-color:var(--bd2);color:var(--tx)}
+.nsrch{margin-top:6px;position:relative}
+.nsrch input{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:5px 8px 5px 26px;color:var(--tx);font-size:11px;font-family:var(--fn);outline:none;transition:.15s}
+.nsrch input:focus{border-color:var(--ac)}
+.nsrch::before{content:'🔍';position:absolute;left:7px;top:50%;transform:translateY(-50%);font-size:10px;pointer-events:none}
+.nlist{flex:1;overflow-y:auto;padding:6px 6px}
+.ngrplabel{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:10px 6px 4px;display:flex;align-items:center;justify-content:space-between}
+.ngrplabel span{cursor:pointer}
+.ngrplabel span:hover{color:var(--tx)}
+.nitem{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:.1s;margin-bottom:1px}
+.nitem:hover{background:var(--s2)}
+.nitem.sel{background:rgba(91,127,247,.12);color:var(--ac)}
+/* 컨텍스트 메뉴 */
+.ctx{position:fixed;z-index:500;background:#0f1117;border:1px solid var(--bd2);border-radius:8px;padding:4px;box-shadow:0 8px 28px rgba(0,0,0,.6);min-width:160px;display:none}
+.ctx.on{display:block}
+.ctx-item{padding:7px 12px;font-size:12px;color:var(--t2);cursor:pointer;border-radius:5px;display:flex;align-items:center;gap:8px;transition:.1s}
+.ctx-item:hover{background:var(--s2);color:var(--tx)}
+.ctx-sep{height:1px;background:var(--bd);margin:3px 4px}
+.ntype{font-size:9px;flex-shrink:0}
+.nname{font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 캔버스 */
+.canvas{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.ctbar{padding:10px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--s1)}
+.ctbar-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.tbadge{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0}
+.tbadge.screen{background:rgba(91,127,247,.15);color:var(--ac)}
+.tbadge.popup{background:rgba(167,139,250,.15);color:var(--ac2)}
+.tname{background:none;border:none;color:var(--tx);font-size:14px;font-weight:700;font-family:var(--fn);outline:none;min-width:0;flex:1}
+.tmeta{display:flex;gap:6px;flex-shrink:0}
+.mchip{display:flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--bd);border-radius:5px;padding:3px 7px}
+.mchip-lbl{font-size:9px;color:var(--t3);font-weight:600}
+.mchip input{background:none;border:none;color:var(--t2);font-size:11px;font-family:var(--fn);outline:none;width:90px}
+.cframe{flex:1;overflow:hidden;position:relative}
+.cframe iframe{width:100%;height:100%;border:none;background:#fff}
+.cempty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--t3)}
+.cempty-ico{font-size:40px;opacity:.2}
+.cempty-txt{font-size:13px}
+/* 우측 메모 패드 */
+.pad{width:280px;flex-shrink:0;background:var(--s1);border-left:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.phd{padding:12px 14px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.phd-title{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.ptags{display:flex;gap:4px;flex-wrap:wrap}
+.ptag{padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s}
+.ptag:hover{opacity:.8}
+.ptag.sel{box-shadow:0 0 0 1px currentColor}
+.t-all{background:rgba(255,255,255,.05);color:var(--t2);border-color:var(--bd)}
+.t-backend{background:rgba(91,127,247,.12);color:#7aa2fa}
+.t-popup{background:rgba(167,139,250,.12);color:#b69dfa}
+.t-auth{background:rgba(251,191,36,.1);color:#fbbf24}
+.t-security{background:rgba(248,113,113,.1);color:var(--rd)}
+.t-ui{background:rgba(62,207,142,.1);color:var(--gn)}
+.t-pending{background:rgba(156,163,175,.1);color:#9ca3af}
+.pnotes{flex:1;overflow-y:auto;padding:8px}
+.pnote{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:10px;margin-bottom:6px;transition:.15s}
+.pnote:hover{border-color:var(--bd2)}
+.pnote.done{opacity:.45}
+.pnote-top{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.pnote-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px}
+.pnote-txt{font-size:11px;color:var(--t2);line-height:1.55;white-space:pre-wrap;cursor:pointer}
+.pnote-txt:hover{color:var(--tx)}
+.pnote-foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.pnote-meta{font-size:9px;color:var(--t3)}
+.pnote-btns{display:flex;gap:4px}
+.pnbtn{background:none;border:none;color:var(--t3);font-size:10px;cursor:pointer;padding:2px 4px;border-radius:3px;transition:.1s}
+.pnbtn:hover{background:var(--bd);color:var(--tx)}
+.padd{padding:8px;border-top:1px solid var(--bd);flex-shrink:0}
+.paddrow{display:flex;gap:4px;margin-bottom:5px}
+.ptagsel{flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:5px;color:var(--t2);font-size:11px;font-family:var(--fn);padding:4px 6px;outline:none}
+.ptagsel:focus{border-color:var(--ac)}
+.ptxtarea{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-size:11px;font-family:var(--fn);padding:6px 8px;resize:none;outline:none;height:52px;transition:.15s}
+.ptxtarea:focus{border-color:var(--ac)}
+.paddbtns{display:flex;justify-content:flex-end}
+.psubmit{padding:5px 14px;border-radius:5px;background:linear-gradient(135deg,var(--ac),#7c5cf7);border:none;color:#fff;font-size:11px;font-weight:700;font-family:var(--fn);cursor:pointer;transition:.15s}
+.psubmit:hover{opacity:.85}
+
+/* ══════════════════════════════
+   공통 모달
+══════════════════════════════ */
+.ov{position:fixed;inset:0;z-index:200;background:rgba(4,5,12,.85);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center}
+.ov.h{display:none}
+.mb{background:#0f1117;border:1px solid var(--bd);border-radius:14px;padding:28px;width:380px;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.mt{font-size:16px;font-weight:800;margin-bottom:18px}
+.mfg{margin-bottom:12px}
+.mfl{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.mfi{width:100%;background:var(--bg);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-size:13px;font-family:var(--fn);padding:8px 10px;outline:none;transition:.15s}
+.mfi:focus{border-color:var(--ac)}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.mtyrow{display:flex;gap:6px;margin-top:5px}
+.mty{flex:1;padding:7px;border-radius:6px;background:var(--s2);border:1px solid var(--bd);color:var(--t2);font-size:11px;font-weight:600;font-family:var(--fn);cursor:pointer;text-align:center;transition:.15s}
+.mty.sel{background:rgba(91,127,247,.15);border-color:rgba(91,127,247,.4);color:var(--ac)}
+.mcancel{padding:7px 16px;border-radius:6px;background:var(--s2);border:1px solid var(--bd);color:var(--t2);font-size:12px;font-family:var(--fn);cursor:pointer;transition:.15s}
+.mcancel:hover{color:var(--tx);border-color:var(--bd2)}
+.mok{padding:7px 18px;border-radius:6px;background:linear-gradient(135deg,var(--ac),#7c5cf7);border:none;color:#fff;font-size:12px;font-weight:700;font-family:var(--fn);cursor:pointer;transition:.15s}
+.mok:hover{opacity:.85}
+/* 토스트 */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:9px 18px;font-size:12px;color:var(--tx);box-shadow:0 6px 24px rgba(0,0,0,.5);z-index:999;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+/* 스크롤바 */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 핀 번호 */
+.pin{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--ac);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:grab;z-index:50;box-shadow:0 2px 8px rgba(91,127,247,.5);transform:translate(-50%,-50%);user-select:none;transition:box-shadow .15s,transform .15s}
+.pin:hover{box-shadow:0 4px 16px rgba(91,127,247,.7);transform:translate(-50%,-50%) scale(1.15)}
+.pin.active{background:#fff;color:var(--ac);box-shadow:0 0 0 3px var(--ac),0 4px 16px rgba(91,127,247,.6);animation:pinpulse .6s ease-out}
+.pin.placing{cursor:crosshair}
+@keyframes pinpulse{0%{box-shadow:0 0 0 0 rgba(91,127,247,.8),0 4px 16px rgba(91,127,247,.6)}100%{box-shadow:0 0 0 10px rgba(91,127,247,0),0 4px 16px rgba(91,127,247,.6)}}
+/* 번호 배치 모드 오버레이 */
+.pin-overlay{position:absolute;inset:0;z-index:40;cursor:crosshair;background:rgba(91,127,247,.06);border:2px dashed rgba(91,127,247,.4)}
+.pin-overlay-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(8,9,15,.85);border:1px solid rgba(91,127,247,.4);border-radius:10px;padding:14px 22px;text-align:center;pointer-events:none}
+/* 메모 번호 뱃지 */
+.pnote-num{width:18px;height:18px;border-radius:50%;background:var(--ac);color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:.15s}
+.pnote-num:hover{transform:scale(1.15);box-shadow:0 2px 8px rgba(91,127,247,.4)}
+.pnote-num.placed{background:var(--gn)}
+.pnote-num.unplaced{background:var(--bd2);color:var(--t3)}
+</style>
+</head>
+<body>
+
+<!-- ══ 기획서 리스트 ══ -->
+<div id="vList" class="view on">
+  <div class="lhd">
+    <div>
+      <div class="lhd-logo">📐 Planify</div>
+      <div class="lhd-sub">기획서를 선택하거나 새로 만들어보세요</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button onclick="resetApiKey()" style="padding:9px 14px;border-radius:8px;background:transparent;border:1px solid #2e3350;color:#505878;font-size:11px;font-family:var(--fn);cursor:pointer;transition:.2s;" onmouseover="this.style.color='#e2e8f0';this.style.borderColor='#3e4460'" onmouseout="this.style.color='#505878';this.style.borderColor='#2e3350'">🔑 API 키</button>
+      <button class="lnew" onclick="openNewProj()">+ 새 기획서</button>
+    </div>
+  </div>
+  <div class="lgrid" id="lgrid"></div>
+</div>
+
+<!-- ══ 기획서 상세 ══ -->
+<div id="vApp" class="view">
+  <nav class="nav">
+    <div class="nhd">
+      <div class="nhd-top">
+        <button class="nback" onclick="goList()" title="목록으로">‹</button>
+        <div style="min-width:0;flex:1">
+          <div class="nlogo">기획서</div>
+          <div class="npname" id="npname" ondblclick="renameProj()" title="더블클릭으로 이름 변경">-</div>
+        </div>
+      </div>
+      <div class="nbtns">
+        <button class="nadd" onclick="openNewPage()">+ 페이지</button>
+        <button class="ngrp" onclick="addGroup()">+ 그룹</button>
+      </div>
+      <div class="nsrch"><input id="nsrch" placeholder="화면 검색..." oninput="renderNav()"></div>
+    </div>
+    <div class="nlist" id="nlist"></div>
+  </nav>
+  <div class="canvas" id="canvas">
+    <div class="ctbar" id="ctbar" style="display:none">
+      <div class="ctbar-left">
+        <span class="tbadge" id="tbadge">화면</span>
+        <input class="tname" id="tname" onblur="saveName(this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+      </div>
+      <div class="tmeta">
+        <div class="mchip"><span class="mchip-lbl">ID</span><input id="tscid" onblur="saveMeta('screenId',this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>
+        <div class="mchip"><span class="mchip-lbl">경로</span><input id="tpath" style="width:130px" onblur="saveMeta('path',this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>
+      </div>
+      <div id="caiBtns" style="display:none;gap:5px;flex-shrink:0">
+        <button onclick="openAiEdit()" style="padding:5px 11px;border-radius:6px;background:rgba(91,127,247,.15);border:1px solid rgba(91,127,247,.3);color:#7aa2fa;font-size:11px;font-weight:700;font-family:var(--fn);cursor:pointer;">✦ AI 수정</button>
+        <button onclick="openAiGen()" style="padding:5px 11px;border-radius:6px;background:var(--s2);border:1px solid var(--bd);color:var(--t2);font-size:11px;font-family:var(--fn);cursor:pointer;">↺ 재생성</button>
+        <button onclick="exportPage()" style="padding:5px 11px;border-radius:6px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:#34d399;font-size:11px;font-weight:700;font-family:var(--fn);cursor:pointer;">↓ 개발용 내보내기</button>
+      </div>
+    </div>
+    <div class="cempty" id="cempty">
+      <div class="cempty-ico">📋</div>
+      <div class="cempty-txt">좌측에서 화면을 선택하세요</div>
+    </div>
+    <div class="cframe" id="cframe" style="display:none">
+      <iframe id="iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+  </div>
+  <div class="pad">
+    <div class="phd">
+      <div class="phd-title">
+        <span>📝 정책 메모</span>
+        <span id="notecount" style="font-size:10px;color:var(--t3);font-weight:400"></span>
+      </div>
+      <div class="ptags" id="ptags"></div>
+    </div>
+    <div class="pnotes" id="pnotes"></div>
+    <div class="padd">
+      <div class="paddrow">
+        <select class="ptagsel" id="ntag">
+          <option value="backend">백엔드</option>
+          <option value="popup">팝업</option>
+          <option value="auth">권한</option>
+          <option value="security">보안</option>
+          <option value="ui">UI</option>
+          <option value="pending">미확정</option>
+        </select>
+      </div>
+      <textarea class="ptxtarea" id="ntxt" placeholder="메모 내용 입력 후 추가..." onkeydown="if(event.ctrlKey&&event.key==='Enter')addNote()"></textarea>
+      <div class="paddbtns"><button class="psubmit" onclick="addNote()">추가</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 기획서 모달 -->
+<div class="ov h" id="pmOv">
+  <div class="mb">
+    <div class="mt" id="pmTitle">새 기획서</div>
+    <div class="mfg"><div class="mfl">기획서 이름 *</div><input class="mfi" id="pmName" placeholder="예: 쇼핑몰 어드민" onkeydown="if(event.key==='Enter')confirmProj()"></div>
+    <div class="mfg"><div class="mfl">설명 (선택)</div><input class="mfi" id="pmDesc" placeholder="예: 2025 리뉴얼"></div>
+    <div class="mfoot"><button class="mcancel" onclick="closePm()">취소</button><button class="mok" id="pmOk" onclick="confirmProj()">만들기</button></div>
+  </div>
+</div>
+
+<!-- 페이지 추가 모달 -->
+<div class="ov h" id="pgOv">
+  <div class="mb">
+    <div class="mt">페이지 추가</div>
+    <div class="mfg">
+      <div class="mfl">유형</div>
+      <div class="mtyrow">
+        <button class="mty sel" data-t="screen" onclick="selTy(this)">🖥 화면</button>
+        <button class="mty" data-t="popup" onclick="selTy(this)">💬 팝업</button>
+      </div>
+    </div>
+    <div class="mfg"><div class="mfl">화면명 *</div><input class="mfi" id="pgName" placeholder="예: 사용자 관리" onkeydown="if(event.key==='Enter')confirmPage()"></div>
+    <div class="mfg"><div class="mfl">화면 ID</div><input class="mfi" id="pgId" placeholder="예: ADM-USR-001"></div>
+    <div class="mfg"><div class="mfl">경로</div><input class="mfi" id="pgPath" placeholder="예: 어드민 > 회원관리"></div>
+    <div class="mfg"><div class="mfl">그룹</div>
+      <select class="mfi" id="pgGrpSel" onchange="onGrpSel()"><option value="">-- 그룹 선택 --</option></select>
+      <input class="mfi" id="pgGrpIn" placeholder="직접 입력" style="margin-top:4px">
+    </div>
+    <div class="mfoot"><button class="mcancel" onclick="closePg()">취소</button><button class="mok" onclick="confirmPage()">추가</button></div>
+  </div>
+</div>
+
+<!-- 입력 모달 (범용) -->
+<div class="ov h" id="inOv">
+  <div class="mb" style="width:320px">
+    <div class="mt" id="inTitle">입력</div>
+    <div class="mfg"><input class="mfi" id="inVal" onkeydown="if(event.key==='Enter')confirmIn()"></div>
+    <div class="mfoot"><button class="mcancel" onclick="closeIn()">취소</button><button class="mok" onclick="confirmIn()">확인</button></div>
+  </div>
+</div>
+
+<!-- 메모 수정 모달 -->
+<div class="ov h" id="noteEditOv">
+  <div class="mb" style="width:400px">
+    <div class="mt">메모 수정</div>
+    <div class="mfg"><textarea class="mfi" id="noteEditVal" style="height:100px;resize:vertical;line-height:1.5"></textarea></div>
+    <div class="mfoot"><button class="mcancel" onclick="closeOv('noteEditOv')">취소</button><button class="mok" onclick="confirmNoteEdit()">저장</button></div>
+  </div>
+</div>
+
+<!-- 컨텍스트 메뉴 -->
+<div class="ctx" id="ctxMenu">
+  <div class="ctx-item" id="ctxMoveGrp" onclick="ctxMoveToGroup()">📁 그룹으로 이동</div>
+  <div class="ctx-item" id="ctxRemoveGrp" onclick="ctxRemoveGroup()">✕ 그룹에서 제거</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="ctxDeletePage()" style="color:var(--rd)">🗑 페이지 삭제</div>
+</div>
+<!-- 그룹 선택 픽커 -->
+<div class="ctx" id="grpPicker"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 상수 ──────────────────────────────────────────────────
+const TL={backend:'백엔드',popup:'팝업',auth:'권한',security:'보안',ui:'UI',pending:'미확정'};
+const TC={backend:'t-backend',popup:'t-popup',auth:'t-auth',security:'t-security',ui:'t-ui',pending:'t-pending'};
+const ICONS=['📐','🗂','📋','📊','🖥','📱','⚙️','🎨','📁','🔧'];
+
+// ── 상태 ──────────────────────────────────────────────────
+let projects=[{
+  id:'p1',name:'증권사 어드민',desc:'샘플 기획서',createdAt:Date.now(),
+  groups:[],
+  pages:[
+    {id:'pg1',type:'screen',name:'사용자 관리',screenId:'ADM-USR-001',path:'어드민 > 회원관리 > 사용자 관리',group:'회원관리',html:'',notes:[
+      {id:1,tag:'backend',text:'조회 시 최소 1자 이상. 공백만 입력 시 전체 조회와 동일 처리',author:'기획자',date:'02-26',done:false},
+      {id:2,tag:'backend',text:'마지막 로그인은 로그 테이블 JOIN. 없으면 \'-\' 표시',author:'기획자',date:'02-26',done:false},
+      {id:3,tag:'backend',text:'페이지당 기본 20건, 클라이언트에서 10/20/50/100 선택 가능',author:'기획자',date:'02-26',done:false},
+      {id:4,tag:'popup',text:'계정 비활성화 시 확인 팝업: "해당 사용자의 계정을 비활성화 하시겠습니까?"',author:'기획자',date:'02-26',done:false},
+      {id:5,tag:'popup',text:'선택 항목 없이 [선택 비활성화] 클릭 → "선택된 사용자가 없습니다." 안내',author:'기획자',date:'02-26',done:false},
+      {id:6,tag:'auth',text:'[사용자 등록] 버튼 - SUPER ADMIN, ADMIN 권한만 노출',author:'기획자',date:'02-26',done:false},
+      {id:7,tag:'auth',text:'[선택 비활성화] 버튼 - SUPER ADMIN만 노출',author:'기획자',date:'02-26',done:false},
+      {id:8,tag:'pending',text:'페이지당 노출 건수 기본값 - 10건? 20건? 백엔드 협의 필요',author:'기획자',date:'02-26',done:false},
+      {id:9,tag:'pending',text:'탈퇴회원 별도 탭 or 필터 처리 여부 미결정',author:'기획자',date:'02-26',done:false},
+    ]},
+    {id:'pg2',type:'popup',name:'사용자 상세 팝업',screenId:'ADM-USR-001-P1',path:'ADM-USR-001 > 이름 클릭',group:'회원관리',html:'',notes:[
+      {id:1,tag:'popup',text:'이름 클릭 시 상세 모달 노출 (읽기 전용)\n수정 버튼 클릭 시 편집 가능 상태로 전환',author:'기획자',date:'02-26',done:false},
+      {id:2,tag:'popup',text:'수정 완료 시 목록 자동 새로고침',author:'기획자',date:'02-26',done:false},
+      {id:3,tag:'auth',text:'비활성화 버튼 - SUPER ADMIN만 노출',author:'기획자',date:'02-26',done:false},
+      {id:4,tag:'pending',text:'부서/팀 필드 추가 여부 - 인사 시스템 연동 가능성 확인 필요',author:'기획자',date:'02-26',done:false},
+    ]},
+    {id:'pg3',type:'popup',name:'사용자 등록 팝업',screenId:'ADM-USR-001-P2',path:'ADM-USR-001 > 사용자 등록 버튼',group:'회원관리',html:'',notes:[
+      {id:1,tag:'popup',text:'등록 완료 시 "사용자가 등록되었습니다." 토스트 메시지, 3초 후 자동 닫힘',author:'기획자',date:'02-26',done:false},
+      {id:2,tag:'backend',text:'이메일 중복 체크 API 별도 호출 필요 (blur 이벤트 시점)',author:'기획자',date:'02-26',done:false},
+      {id:3,tag:'security',text:'임시 비밀번호 자동 생성 버튼 제공. 등록 완료 시 이메일 자동 발송',author:'기획자',date:'02-26',done:false},
+      {id:4,tag:'ui',text:'필수 입력 미입력 시 각 필드 하단 인라인 에러 메시지 표시',author:'기획자',date:'02-26',done:false},
+    ]},
+    {id:'pg4',type:'screen',name:'권한 관리',screenId:'ADM-AUTH-001',path:'어드민 > 회원관리 > 권한 관리',group:'회원관리',html:'',notes:[
+      {id:1,tag:'backend',text:'권한 변경은 즉시 반영 (저장 버튼 없음, 토글 onChange 즉시 API 호출)',author:'기획자',date:'02-26',done:false},
+      {id:2,tag:'auth',text:'SUPER ADMIN만 권한 수정 가능. 일반 ADMIN은 조회만 가능',author:'기획자',date:'02-26',done:false},
+      {id:3,tag:'pending',text:'권한 항목 목록 확정 필요 - 메뉴별? 기능별? BA 협의 필요',author:'기획자',date:'02-26',done:false},
+    ]},
+  ]
+}];
+let curProjId=projects[0].id;
+let curPageId=null;
+let noteFilter='all';
+let noteNextId=200;
+let pgModalType='screen';
+let _pmMode='new'; // 'new'|'dup'|'rename'
+let _pmSrcId=null;
+let _inCb=null;
+
+// ── 현재 프로젝트/페이지 ──────────────────────────────────
+const gProj=()=>projects.find(p=>p.id===curProjId)||projects[0];
+const gPage=()=>gProj().pages.find(p=>p.id===curPageId);
+
+// ── 뷰 전환 ──────────────────────────────────────────────
+function showList(){
+  document.getElementById('vList').classList.add('on');
+  document.getElementById('vApp').classList.remove('on');
+  renderList();
+}
+function showApp(){
+  document.getElementById('vList').classList.remove('on');
+  document.getElementById('vApp').classList.add('on');
+  document.getElementById('npname').textContent=gProj().name;
+  renderNav();
+  if(curPageId) renderPage(); else showEmpty();
+}
+function goList(){showList();}
+
+// ── 기획서 리스트 ─────────────────────────────────────────
+function renderList(){
+  const g=document.getElementById('lgrid');
+  if(!projects.length){
+    g.innerHTML='<div class="lempty"><div class="lempty-ico">📂</div><div>기획서가 없어요</div></div>';
+    return;
+  }
+  g.innerHTML=projects.map((p,i)=>{
+    const ico=ICONS[i%ICONS.length];
+    const d=new Date(p.createdAt).toLocaleDateString('ko-KR',{month:'short',day:'numeric'});
+    const del=projects.length>1?`<button class="lact del" onclick="event.stopPropagation();delProj('${p.id}')" title="삭제">🗑</button>`:'';
+    return `<div class="lcard" onclick="openProj('${p.id}')">
+      <div class="lcard-acts" onclick="event.stopPropagation()">
+        <button class="lact" onclick="renameProj2('${p.id}')" title="이름 변경">✏️</button>
+        <button class="lact" onclick="dupProj('${p.id}')" title="복사">⧉</button>
+        ${del}
+      </div>
+      <div class="lcard-ico">${ico}</div>
+      <div class="lcard-name">${esc(p.name)}</div>
+      <div class="lcard-desc">${esc(p.desc||'')}</div>
+      <div class="lcard-foot">
+        <span class="lcard-cnt">페이지 ${p.pages.length}개</span>
+        <span class="lcard-date">${d}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openProj(id){
+  curProjId=id; curPageId=null;
+  const p=gProj();
+  if(p.pages.length) curPageId=p.pages[0].id;
+  showApp();
+}
+function openNewProj(){_pmMode='new';_pmSrcId=null;document.getElementById('pmTitle').textContent='새 기획서';document.getElementById('pmOk').textContent='만들기';document.getElementById('pmName').value='';document.getElementById('pmDesc').value='';openOv('pmOv');setTimeout(()=>document.getElementById('pmName').focus(),80);}
+function dupProj(id){_pmMode='dup';_pmSrcId=id;const s=projects.find(p=>p.id===id);document.getElementById('pmTitle').textContent='기획서 복사';document.getElementById('pmOk').textContent='복사';document.getElementById('pmName').value=s.name+' (복사본)';document.getElementById('pmDesc').value=s.desc||'';openOv('pmOv');setTimeout(()=>document.getElementById('pmName').focus(),80);}
+function renameProj2(id){const p=projects.find(x=>x.id===id);openIn('기획서 이름 변경',p.name,v=>{if(!v.trim())return;p.name=v.trim();if(id===curProjId)document.getElementById('npname').textContent=p.name;save();renderList();});}
+function renameProj(){renameProj2(curProjId);}
+function delProj(id){const p=projects.find(x=>x.id===id);if(!confirm(`"${p.name}" 삭제할까요?`))return;projects=projects.filter(x=>x.id!==id);save();renderList();toast('삭제됐어요');}
+function confirmProj(){
+  const name=document.getElementById('pmName').value.trim();
+  if(!name)return;
+  const desc=document.getElementById('pmDesc').value.trim();
+  if(_pmMode==='dup'){
+    const src=projects.find(p=>p.id===_pmSrcId);
+    const np=JSON.parse(JSON.stringify(src));
+    np.id='p'+Date.now(); np.name=name; np.desc=desc; np.createdAt=Date.now();
+    np.pages=np.pages.map((p,i)=>({...p,id:'pg'+Date.now()+i,notes:(p.notes||[]).map(n=>({...n,id:n.id+1000}))}));
+    projects.push(np);
+    closePm(); save(); renderList(); toast(`"${name}" 복사 완료!`);
+  } else {
+    const np={id:'p'+Date.now(),name,desc,createdAt:Date.now(),groups:[],pages:[]};
+    projects.push(np);
+    closePm(); save(); renderList(); toast(`"${name}" 기획서 만들어졌어요!`);
+  }
+}
+function closePm(){closeOv('pmOv');}
+
+// ── 네비 ──────────────────────────────────────────────────
+function renderNav(){
+  const q=(document.getElementById('nsrch').value||'').toLowerCase();
+  const proj=gProj();
+  const pages=proj.pages.filter(p=>!q||p.name.toLowerCase().includes(q));
+  const groups=[...new Set(pages.map(p=>p.group||'').filter(Boolean))];
+  const noGroup=pages.filter(p=>!p.group);
+  let html='';
+  groups.forEach(g=>{
+    html+=`<div class="ngrplabel"><span ondblclick="renameGroup('${esc(g)}')">${esc(g)}</span></div>`;
+    pages.filter(p=>p.group===g).forEach(p=>{
+      const sel=p.id===curPageId?' sel':'';
+      const ico=p.type==='screen'?'🖥':'💬';
+      html+=`<div class="nitem${sel}" onclick="selPage('${p.id}')" oncontextmenu="openCtx(event,'${p.id}')"><span class="ntype">${ico}</span><span class="nname">${esc(p.name)}</span></div>`;
+    });
+  });
+  if(noGroup.length){
+    if(groups.length) html+=`<div class="ngrplabel"><span>기타</span></div>`;
+    noGroup.forEach(p=>{
+      const sel=p.id===curPageId?' sel':'';
+      const ico=p.type==='screen'?'🖥':'💬';
+      html+=`<div class="nitem${sel}" onclick="selPage('${p.id}')" oncontextmenu="openCtx(event,'${p.id}')"><span class="ntype">${ico}</span><span class="nname">${esc(p.name)}</span></div>`;
+    });
+  }
+  if(!pages.length) html=`<div style="padding:16px 10px;font-size:11px;color:var(--t3);text-align:center">${q?'검색 결과 없음':'페이지가 없어요'}</div>`;
+  document.getElementById('nlist').innerHTML=html;
+}
+function selPage(id){curPageId=id;renderNav();renderPage();}
+function addGroup(){openIn('그룹 이름','',(v)=>{if(!v.trim())return;gProj().groups=gProj().groups||[];gProj().groups.push(v.trim());save();renderNav();});}
+function renameGroup(old){openIn('그룹 이름 변경',old,(v)=>{if(!v.trim())return;gProj().pages.forEach(p=>{if(p.group===old)p.group=v.trim();});save();renderNav();toast('그룹명 변경됐어요');});}
+
+// ── 컨텍스트 메뉴 ─────────────────────────────────────────
+let _ctxPageId=null;
+function openCtx(e,pageId){
+  e.preventDefault();
+  _ctxPageId=pageId;
+  const p=gProj().pages.find(x=>x.id===pageId);
+  // 그룹 있으면 "그룹에서 제거" 표시, 없으면 숨김
+  document.getElementById('ctxRemoveGrp').style.display=p.group?'flex':'none';
+  const menu=document.getElementById('ctxMenu');
+  menu.classList.add('on');
+  // 화면 밖으로 나가지 않게 위치 조정
+  const mx=Math.min(e.clientX, window.innerWidth-170);
+  const my=Math.min(e.clientY, window.innerHeight-120);
+  menu.style.left=mx+'px';
+  menu.style.top=my+'px';
+}
+function closeCtx(){document.getElementById('ctxMenu').classList.remove('on');_ctxPageId=null;}
+function ctxMoveToGroup(){
+  if(!_ctxPageId)return;
+  closeCtx();
+  const groups=[...new Set(gProj().pages.map(p=>p.group||'').filter(Boolean))];
+  openGroupPicker(groups,(grp)=>{
+    const p=gProj().pages.find(x=>x.id===_ctxPageId);
+    if(p){p.group=grp;save();renderNav();toast(`"${p.name}" → ${grp} 그룹으로 이동됐어요`);}
+  });
+}
+function ctxRemoveGroup(){
+  if(!_ctxPageId)return;
+  const p=gProj().pages.find(x=>x.id===_ctxPageId);
+  if(p){p.group='';save();renderNav();toast(`"${p.name}" 그룹에서 제거됐어요`);}
+  closeCtx();
+}
+function ctxDeletePage(){
+  if(!_ctxPageId)return;
+  const p=gProj().pages.find(x=>x.id===_ctxPageId);
+  if(!confirm(`"${p.name}" 페이지를 삭제할까요?`)){closeCtx();return;}
+  gProj().pages=gProj().pages.filter(x=>x.id!==_ctxPageId);
+  if(curPageId===_ctxPageId){curPageId=gProj().pages[0]?.id||null;}
+  closeCtx(); save(); renderNav(); if(curPageId)renderPage();else showEmpty();
+  toast('페이지 삭제됐어요');
+}
+// 그룹 선택 모달 (기존 그룹 목록 + 새 그룹 직접입력)
+let _grpPickerCb=null;
+function openGroupPicker(groups,cb){
+  _grpPickerCb=cb;
+  if(!groups.length){
+    // 그룹이 없으면 바로 새 그룹 이름 입력
+    openIn('이동할 그룹 이름','',(v)=>{if(v&&v.trim())cb(v.trim());});
+    return;
+  }
+  // 그룹 있으면 선택 + 새 그룹 옵션
+  const opts=groups.map(g=>`<div class="ctx-item" onclick="pickGrp('${esc(g)}')"">📁 ${esc(g)}</div>`).join('');
+  const picker=document.getElementById('grpPicker');
+  picker.innerHTML=opts+`<div class="ctx-sep"></div><div class="ctx-item" onclick="pickGrpNew()">✏️ 새 그룹으로 이동</div>`;
+  picker.classList.add('on');
+  picker.style.left=document.getElementById('ctxMenu').style.left;
+  picker.style.top=document.getElementById('ctxMenu').style.top;
+}
+function pickGrp(g){document.getElementById('grpPicker').classList.remove('on');if(_grpPickerCb){_grpPickerCb(g);_grpPickerCb=null;}}
+function pickGrpNew(){document.getElementById('grpPicker').classList.remove('on');openIn('새 그룹 이름','',(v)=>{if(v&&v.trim()&&_grpPickerCb){_grpPickerCb(v.trim());_grpPickerCb=null;}});}
+// 바깥 클릭 시 컨텍스트 메뉴 닫기
+document.addEventListener('click',()=>{closeCtx();document.getElementById('grpPicker')?.classList.remove('on');});
+
+// ── 페이지 추가 ───────────────────────────────────────────
+function openNewPage(){
+  pgModalType='screen';
+  document.querySelectorAll('.mty').forEach(b=>{b.classList.toggle('sel',b.dataset.t==='screen');});
+  document.getElementById('pgName').value='';
+  document.getElementById('pgId').value='';
+  document.getElementById('pgPath').value='';
+  document.getElementById('pgGrpIn').value='';
+  const sel=document.getElementById('pgGrpSel');
+  sel.innerHTML='<option value="">-- 그룹 선택 --</option>';
+  const groups=[...new Set(gProj().pages.map(p=>p.group||'').filter(Boolean))];
+  groups.forEach(g=>{const o=document.createElement('option');o.value=g;o.textContent=g;sel.appendChild(o);});
+  openOv('pgOv');setTimeout(()=>document.getElementById('pgName').focus(),80);
+}
+function selTy(el){pgModalType=el.dataset.t;document.querySelectorAll('.mty').forEach(b=>b.classList.toggle('sel',b===el));}
+function onGrpSel(){const v=document.getElementById('pgGrpSel').value;if(v)document.getElementById('pgGrpIn').value=v;}
+function confirmPage(){
+  const name=document.getElementById('pgName').value.trim();
+  if(!name)return;
+  const grp=document.getElementById('pgGrpIn').value.trim()||document.getElementById('pgGrpSel').value;
+  const pg={
+    id:'pg'+Date.now(),type:pgModalType,
+    name,screenId:document.getElementById('pgId').value.trim(),
+    path:document.getElementById('pgPath').value.trim(),
+    group:grp,html:'',notes:[]
+  };
+  gProj().pages.push(pg);
+  curPageId=pg.id;
+  closePg(); save(); renderNav(); renderPage();
+  toast(`"${name}" 추가됐어요`);
+}
+function closePg(){closeOv('pgOv');}
+
+// ── 캔버스 ────────────────────────────────────────────────
+function showEmpty(){
+  document.getElementById('ctbar').style.display='none';
+  document.getElementById('cempty').style.display='flex';
+  document.getElementById('cframe').style.display='none';
+  document.getElementById('pnotes').innerHTML='';
+  document.getElementById('notecount').textContent='';
+}
+function renderPage(){
+  const p=gPage();
+  if(!p){showEmpty();return;}
+  const bar=document.getElementById('ctbar');
+  bar.style.display='flex';
+  const badge=document.getElementById('tbadge');
+  badge.textContent=p.type==='screen'?'화면':'팝업';
+  badge.className='tbadge '+(p.type==='screen'?'screen':'popup');
+  document.getElementById('tname').value=p.name;
+  document.getElementById('tscid').value=p.screenId||'';
+  document.getElementById('tpath').value=p.path||'';
+  document.getElementById('cempty').style.display='none';
+  if(p.html){
+    document.getElementById('cframe').style.display='flex';
+    const iframe=document.getElementById('iframe');
+    iframe.onload=()=>renderPins(); // 로드 완료 후 핀 그리기
+    iframe.srcdoc=p.html;
+    document.getElementById('caiBtns').style.display='flex';
+  } else {
+    document.getElementById('cframe').style.display='none';
+    document.getElementById('cempty').style.display='flex';
+    document.getElementById('cempty').innerHTML=`
+      <div class="cempty-ico">✦</div>
+      <div class="cempty-txt">AI로 화면을 생성해보세요</div>
+      <button onclick="openAiGen()" style="margin-top:12px;padding:8px 20px;border-radius:7px;background:linear-gradient(135deg,var(--ac),#7c5cf7);border:none;color:#fff;font-size:12px;font-weight:700;font-family:var(--fn);cursor:pointer;">✦ 화면 생성하기</button>`;
+    document.getElementById('caiBtns').style.display='none';
+  }
+  renderPad();
+}
+function saveName(v){const p=gPage();if(p&&v.trim()){p.name=v.trim();save();renderNav();}}
+function saveMeta(k,v){const p=gPage();if(p){p[k]=v;save();}}
+
+// ── 메모 패드 ─────────────────────────────────────────────
+const TAG_LABELS=Object.entries(TL);
+let _placingNoteId=null;
+
+function renderPad(){
+  const p=gPage();
+  const notes=p?p.notes:[];
+  const tagEl=document.getElementById('ptags');
+  const allTags=['all',...[...new Set(notes.map(n=>n.tag))]];
+  tagEl.innerHTML=allTags.map(t=>{
+    const sel=t===noteFilter?' sel':'';
+    const lbl=t==='all'?`전체 ${notes.length}`:TL[t]||t;
+    const cls=t==='all'?'t-all':TC[t]||'';
+    return `<span class="ptag ${cls}${sel}" onclick="setFilter('${t}')">${lbl}</span>`;
+  }).join('');
+  const filtered=noteFilter==='all'?notes:notes.filter(n=>n.tag===noteFilter);
+  document.getElementById('notecount').textContent=filtered.length?`${filtered.length}개`:'';
+  if(!filtered.length){
+    document.getElementById('pnotes').innerHTML=`<div style="padding:20px;text-align:center;font-size:11px;color:var(--t3)">${p?'메모가 없어요':'페이지를 선택하세요'}</div>`;
+    return;
+  }
+  document.getElementById('pnotes').innerHTML=filtered.map((n,fi)=>{
+    const done=n.done?' done':'';
+    const globalIdx=p.notes.findIndex(x=>x.id===n.id);
+    const num=globalIdx+1;
+    const hasPin=n.pin!=null;
+    const numCls=hasPin?'placed':'unplaced';
+    return `<div class="pnote${done}" id="note${n.id}" onclick="highlightPin(${n.id})">
+      <div class="pnote-top" style="display:flex;align-items:center;gap:6px;">
+        <span class="pnote-num ${numCls}" title="${hasPin?'클릭 → 하이라이트':'클릭 → 핀 배치'}" onclick="event.stopPropagation();${hasPin?`highlightPin(${n.id})`:`startPlacePin(${n.id})`}">${num}</span>
+        <span class="pnote-tag ${TC[n.tag]||''}">${TL[n.tag]||n.tag}</span>
+      </div>
+      <div class="pnote-txt">${esc(n.text)}</div>
+      <div class="pnote-foot">
+        <span class="pnote-meta">${n.author} · ${n.date}</span>
+        <div class="pnote-btns">
+          <button class="pnbtn" onclick="event.stopPropagation();editNote(${n.id})" title="수정">✏️</button>
+          <button class="pnbtn" onclick="event.stopPropagation();toggleNote(${n.id})" title="완료">${n.done?'↩':'✓'}</button>
+          <button class="pnbtn" onclick="event.stopPropagation();delNote(${n.id})" title="삭제">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  renderPins();
+}
+
+function setFilter(t){noteFilter=t;renderPad();}
+
+function addNote(){
+  const p=gPage(); if(!p) return;
+  const txt=document.getElementById('ntxt').value.trim();
+  if(!txt) return;
+  const tag=document.getElementById('ntag').value;
+  const now=new Date();
+  const date=`${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const newNote={id:noteNextId++,tag,text:txt,author:'기획자',date,done:false,pin:null};
+  p.notes.push(newNote);
+  document.getElementById('ntxt').value='';
+  save(); renderPad();
+}
+
+function toggleNote(id){const p=gPage();if(!p)return;const n=p.notes.find(x=>x.id===id);if(n){n.done=!n.done;save();renderPad();}}
+function delNote(id){const p=gPage();if(!p)return;p.notes=p.notes.filter(x=>x.id!==id);save();renderPad();}
+let _editNoteId=null;
+function editNote(id){
+  const p=gPage();if(!p)return;
+  const n=p.notes.find(x=>x.id===id);if(!n)return;
+  _editNoteId=id;
+  document.getElementById('noteEditVal').value=n.text;
+  openOv('noteEditOv');
+  setTimeout(()=>document.getElementById('noteEditVal').focus(),80);
+}
+function confirmNoteEdit(){
+  const v=document.getElementById('noteEditVal').value.trim();
+  if(!v){alert('내용을 입력해주세요.');return;}
+  const p=gPage();if(!p)return;
+  const n=p.notes.find(x=>x.id===_editNoteId);
+  if(n){n.text=v;save();renderPad();}
+  closeOv('noteEditOv');
+  _editNoteId=null;
+}
+
+// ── 핀 시스템 ─────────────────────────────────────────────
+function getIframeDoc(){
+  const iframe=document.getElementById('iframe');
+  try{return iframe&&iframe.contentDocument?iframe.contentDocument:null;}catch(e){return null;}
+}
+
+function renderPins(){
+  const p=gPage(); if(!p) return;
+  const iDoc=getIframeDoc(); if(!iDoc) return;
+  // 오버레이 잔재 제거
+  iDoc.getElementById('__pinOverlay')?.remove();
+  let pc=iDoc.getElementById('__pinContainer');
+  if(pc) pc.remove();
+  pc=iDoc.createElement('div');
+  pc.id='__pinContainer';
+  pc.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:9999;';
+  iDoc.body.appendChild(pc);
+  p.notes.forEach((n,idx)=>{
+    if(n.pin==null) return;
+    const pin=iDoc.createElement('div');
+    pin.id='__pin'+n.id;
+    pin.dataset.noteId=n.id;
+    pin.textContent=idx+1;
+    pin.style.cssText=`position:fixed;left:${n.pin.x}%;top:${n.pin.y}%;width:22px;height:22px;border-radius:50%;background:#5b7ff7;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:grab;box-shadow:0 2px 8px rgba(91,127,247,.5);transform:translate(-50%,-50%);user-select:none;pointer-events:all;font-family:sans-serif;transition:box-shadow .15s;`;
+    pc.appendChild(pin);
+    makePinDraggable(pin,n.id,iDoc);
+  });
+}
+
+function makePinDraggable(pin,noteId,iDoc){
+  let dragging=false;
+  pin.addEventListener('mousedown',e=>{dragging=true;pin.style.cursor='grabbing';e.stopPropagation();e.preventDefault();});
+  iDoc.addEventListener('mousemove',e=>{
+    if(!dragging) return;
+    const W=iDoc.documentElement.clientWidth;
+    const H=iDoc.documentElement.clientHeight;
+    const x=Math.max(2,Math.min(98,(e.clientX/W)*100));
+    const y=Math.max(2,Math.min(98,(e.clientY/H)*100));
+    pin.style.left=x+'%'; pin.style.top=y+'%';
+    const p=gPage(); if(!p) return;
+    const n=p.notes.find(n=>n.id===noteId);
+    if(n) n.pin={x,y};
+  });
+  iDoc.addEventListener('mouseup',()=>{if(dragging){dragging=false;pin.style.cursor='grab';save();}});
+}
+
+function startPlacePin(noteId){
+  const p=gPage(); if(!p||!p.html){alert('먼저 화면을 생성해주세요.');return;}
+  _placingNoteId=noteId;
+  const iDoc=getIframeDoc(); if(!iDoc) return;
+  let ov=iDoc.getElementById('__pinOverlay');
+  if(ov) ov.remove();
+  ov=iDoc.createElement('div');
+  ov.id='__pinOverlay';
+  const num=p.notes.findIndex(n=>n.id===noteId)+1;
+  ov.style.cssText='position:fixed;inset:0;z-index:10000;cursor:crosshair;background:rgba(91,127,247,.07);border:2px dashed rgba(91,127,247,.5);';
+  ov.innerHTML=`<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(8,9,15,.9);border:1px solid rgba(91,127,247,.5);border-radius:10px;padding:14px 22px;text-align:center;pointer-events:none;color:#e2e8f0;font-family:sans-serif;font-size:13px;font-weight:700;">번호 <span style="background:#5b7ff7;color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;">${num}</span> 위치 클릭<br><span style="font-size:10px;color:#8892b0;font-weight:400;margin-top:4px;display:block;">ESC로 취소</span></div>`;
+  ov.addEventListener('click',e=>{
+    const W=iDoc.documentElement.clientWidth;
+    const H=iDoc.documentElement.clientHeight;
+    const x=(e.clientX/W)*100;
+    const y=(e.clientY/H)*100;
+    const pp=gPage(); if(!pp) return;
+    const n=pp.notes.find(n=>n.id===_placingNoteId);
+    if(n){n.pin={x,y};save();}
+    ov.remove(); _placingNoteId=null; renderPad();
+  });
+  const escHandler=e=>{if(e.key==='Escape'){ov.remove();_placingNoteId=null;iDoc.removeEventListener('keydown',escHandler);}};
+  iDoc.addEventListener('keydown',escHandler);
+  iDoc.body.appendChild(ov);
+}
+
+function highlightPin(noteId){
+  const p=gPage(); if(!p) return;
+  const n=p.notes.find(x=>x.id===noteId);
+  if(!n||n.pin==null) return;
+  const iDoc=getIframeDoc(); if(!iDoc) return;
+  iDoc.querySelectorAll('[id^="__pin"]:not(#__pinContainer):not(#__pinOverlay)').forEach(pin=>{
+    const isTarget=pin.dataset.noteId==noteId;
+    pin.style.transition='all .15s';
+    pin.style.background=isTarget?'#fff':'#5b7ff7';
+    pin.style.color=isTarget?'#5b7ff7':'#fff';
+    pin.style.boxShadow=isTarget?'0 0 0 4px #5b7ff7,0 0 20px rgba(91,127,247,.9)':'0 2px 8px rgba(91,127,247,.5)';
+    pin.style.transform=isTarget?'translate(-50%,-50%) scale(1.6)':'translate(-50%,-50%) scale(1)';
+    pin.style.zIndex=isTarget?'99999':'9999';
+  });
+  setTimeout(()=>{
+    iDoc.querySelectorAll('[id^="__pin"]:not(#__pinContainer):not(#__pinOverlay)').forEach(pin=>{
+      pin.style.background='#5b7ff7';
+      pin.style.color='#fff';
+      pin.style.boxShadow='0 2px 8px rgba(91,127,247,.5)';
+      pin.style.transform='translate(-50%,-50%) scale(1)';
+      pin.style.zIndex='9999';
+    });
+  },2000);
+}
+
+// ── 공통 모달 ─────────────────────────────────────────────
+function openOv(id){document.getElementById(id).classList.remove('h');}
+function closeOv(id){document.getElementById(id).classList.add('h');}
+function openIn(title,def,cb){
+  _inCb=cb;
+  document.getElementById('inTitle').textContent=title;
+  document.getElementById('inVal').value=def||'';
+  openOv('inOv');
+  setTimeout(()=>{const el=document.getElementById('inVal');el.focus();el.select();},80);
+}
+function confirmIn(){const v=document.getElementById('inVal').value;closeIn();if(_inCb){_inCb(v);_inCb=null;}}
+function closeIn(){closeOv('inOv');_inCb=null;}
+
+// 모달 바깥 클릭
+['pmOv','pgOv','inOv','noteEditOv'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)closeOv(id);});
+});
+
+// ── 토스트 ────────────────────────────────────────────────
+let _toastT;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(_toastT);
+  _toastT=setTimeout(()=>el.classList.remove('on'),2800);
+}
+
+// ── 유틸 ──────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── 영속성 (localStorage) ────────────────────────────────
+// ── AI 생성/수정 ───────────────────────────────────────────
+function save(){} // 메모리 전용 - no-op
+function openAiGen(){
+  const p=gPage(); if(!p) return;
+  // 오버레이 모달
+  let ov=document.getElementById('aiOv');
+  if(!ov){ov=document.createElement('div');ov.id='aiOv';ov.style.cssText='position:fixed;inset:0;z-index:300;background:rgba(4,5,12,.85);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;';document.body.appendChild(ov);}
+  const isRegen=!!p.html;
+  ov.innerHTML=`<div style="background:#0f1117;border:1px solid #1e2235;border-radius:14px;padding:28px;width:560px;box-shadow:0 32px 80px rgba(0,0,0,.6);">
+    <div style="font-size:15px;font-weight:800;color:#e2e8f0;margin-bottom:16px;">${isRegen?'↺ 재생성':'✦ 화면 생성'}</div>
+    <textarea id="aiPBox" style="width:100%;box-sizing:border-box;height:90px;background:#08090f;border:1px solid #1e2235;border-radius:8px;color:#e2e8f0;font-size:12px;font-family:var(--fn);padding:10px;resize:vertical;outline:none;" placeholder="예: 공지사항 목록 화면. 상단에 검색 필터(제목, 기간), 테이블에 번호/제목/작성자/등록일/상태 컬럼, 등록 버튼.">${isRegen?p.aiPrompt||'':''}</textarea>
+    <div style="font-size:10px;color:#4a5278;margin-top:5px;">💡 Ctrl+Enter로 생성</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+      <button onclick="document.getElementById('aiOv').remove()" style="padding:7px 16px;border-radius:6px;background:#13151f;border:1px solid #1e2235;color:#8892b0;font-size:12px;font-family:var(--fn);cursor:pointer;">취소</button>
+      <button onclick="doAiGen()" style="padding:7px 18px;border-radius:6px;background:linear-gradient(135deg,#5b7ff7,#7c5cf7);border:none;color:#fff;font-size:12px;font-weight:700;font-family:var(--fn);cursor:pointer;">${isRegen?'↺ 재생성':'✦ 생성하기'}</button>
+    </div>
+  </div>`;
+  ov.onclick=e=>{if(e.target===ov&&!ov._dragging)ov.remove();};
+  ov.onmousedown=e=>{ov._dragging=false;};
+  ov.onmousemove=e=>{if(e.buttons)ov._dragging=true;};
+  document.getElementById('aiPBox').onkeydown=e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();doAiGen();}};
+  setTimeout(()=>document.getElementById('aiPBox')?.focus(),50);
+}
+
+function openAiEdit(){
+  const p=gPage(); if(!p||!p.html){alert('생성된 화면이 없어요.');return;}
+  let ov=document.getElementById('aiOv');
+  if(!ov){ov=document.createElement('div');ov.id='aiOv';ov.style.cssText='position:fixed;inset:0;z-index:300;background:rgba(4,5,12,.85);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;';document.body.appendChild(ov);}
+  ov.innerHTML=`<div style="background:#0f1117;border:1px solid #1e2235;border-radius:14px;padding:28px;width:560px;box-shadow:0 32px 80px rgba(0,0,0,.6);">
+    <div style="font-size:15px;font-weight:800;color:#e2e8f0;margin-bottom:16px;">✦ AI 수정</div>
+    <textarea id="aiEBox" style="width:100%;box-sizing:border-box;height:90px;background:#08090f;border:1px solid #1e2235;border-radius:8px;color:#e2e8f0;font-size:12px;font-family:var(--fn);padding:10px;resize:vertical;outline:none;" placeholder="예: 상태 컬럼 삭제 / 검색 필터에 드롭다운 추가 / 버튼 색상 빨간색으로"></textarea>
+    <div style="font-size:10px;color:#4a5278;margin-top:5px;">💡 Ctrl+Enter로 수정</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+      <button onclick="document.getElementById('aiOv').remove()" style="padding:7px 16px;border-radius:6px;background:#13151f;border:1px solid #1e2235;color:#8892b0;font-size:12px;font-family:var(--fn);cursor:pointer;">취소</button>
+      <button onclick="doAiEdit()" style="padding:7px 18px;border-radius:6px;background:linear-gradient(135deg,#5b7ff7,#7c5cf7);border:none;color:#fff;font-size:12px;font-weight:700;font-family:var(--fn);cursor:pointer;">✦ 수정하기</button>
+    </div>
+  </div>`;
+  ov.onclick=e=>{if(e.target===ov&&!ov._dragging)ov.remove();};
+  ov.onmousedown=e=>{ov._dragging=false;};
+  ov.onmousemove=e=>{if(e.buttons)ov._dragging=true;};
+  document.getElementById('aiEBox').onkeydown=e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();doAiEdit();}};
+  setTimeout(()=>document.getElementById('aiEBox')?.focus(),50);
+}
+
+function showAiLoading(msg){
+  // 기존 로딩 오버레이 제거
+  document.getElementById('aiLoading')?.remove();
+  const ov=document.createElement('div');
+  ov.id='aiLoading';
+  ov.style.cssText='position:absolute;inset:0;z-index:100;background:rgba(8,9,15,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;';
+  ov.innerHTML=`<div style="width:32px;height:32px;border:3px solid #1e2235;border-top-color:#5b7ff7;border-radius:50%;animation:spin 1s linear infinite;"></div><div style="font-size:13px;font-weight:600;color:#e2e8f0;">${msg}</div>`;
+  // canvas 위에 올리기
+  document.getElementById('canvas').style.position='relative';
+  document.getElementById('canvas').appendChild(ov);
+}
+
+const GEMINI_KEY='AIzaSyDW1vGceEJz9nNg-RmeMKHVGrR_WWdChFg';
+
+async function callAI(system,user){
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      contents:[{parts:[{text:system+'\n\n'+user}]}],
+      generationConfig:{maxOutputTokens:8000}
+    })
+  });
+  const data=await res.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+}
+
+async function doAiGen(){
+  const prompt=document.getElementById('aiPBox')?.value.trim();
+  if(!prompt){alert('내용을 입력해주세요.');return;}
+  const p=gPage(); if(!p) return;
+  document.getElementById('aiOv')?.remove();
+  p.aiPrompt=prompt;
+  document.getElementById('cempty').style.display='none';
+  document.getElementById('cframe').style.display='flex';
+  showAiLoading('✦ 화면을 생성하고 있어요...');
+  const system='어드민/웹 기획 화면을 HTML로 만드는 전문가입니다.\n규칙:\n- 다크 테마 (배경:#0f1117, 카드:#1a1d27, 테두리:#2e3350, 텍스트:#e8ecf4)\n- 폰트: Pretendard, Noto Sans KR, sans-serif\n- 인라인 CSS 또는 style 태그 사용 (외부 CSS 불가)\n- 샘플 데이터 5~10개 포함\n- min-height:600px\n- 마크다운 없이 html 코드만 반환';
+  const user='다음 화면을 HTML로 만들어주세요:\n\n'+prompt;
+  try{
+    const text=await callAI(system,user);
+    // ```html ... ``` 마크다운 펜스 제거
+    const m=text.match(/```html?\s*([\s\S]*?)```/i);
+    const html=m?m[1].trim():text.replace(/^```html?\s*/i,'').replace(/```\s*$/,'').trim();
+    p.html=html;
+    document.getElementById('aiLoading')?.remove();
+    renderPage();
+  }catch(e){
+    document.getElementById('aiLoading')?.remove();
+    document.getElementById('cframe').style.display='none';
+    document.getElementById('cempty').style.display='flex';
+    alert('생성 실패: '+e.message);
+  }
+}
+
+async function doAiEdit(){
+  const prompt=document.getElementById('aiEBox')?.value.trim();
+  if(!prompt){alert('수정 내용을 입력해주세요.');return;}
+  const p=gPage(); if(!p||!p.html) return;
+  document.getElementById('aiOv')?.remove();
+  showAiLoading('✦ 수정하고 있어요...');
+  const system='HTML 화면 수정 전문가입니다.\n반드시 지켜야 할 규칙:\n1. 수정 요청 사항을 반드시 반영하세요. 요청한 내용은 무조건 구현해야 합니다.\n2. 기존 HTML의 전체 스타일(색상, 폰트, 레이아웃, 다크테마)은 그대로 유지하세요.\n3. 완성된 HTML 코드만 반환하세요. 마크다운, 설명 없이.';
+  const user='기존 HTML:\n'+p.html+'\n\n수정 요청: '+prompt+'\n\n위 수정 요청을 반드시 반영한 완성된 HTML을 반환하세요.';
+  try{
+    const text=await callAI(system,user);
+    const m=text.match(/```html?\s*([\s\S]*?)```/i);
+    const html=m?m[1].trim():text.replace(/^```html?\s*/i,'').replace(/```\s*$/,'').trim();
+    p.html=html;
+    document.getElementById('aiLoading')?.remove();
+    renderPage();
+  }catch(e){
+    document.getElementById('aiLoading')?.remove();
+    renderPage();
+    alert('수정 오류: '+e.message);
+  }
+}
+
+// ── 개발용 내보내기 ────────────────────────────────────────
+function exportPage(){
+  const p=gPage(); if(!p||!p.html){alert('생성된 화면이 없어요.');return;}
+  const proj=gProj();
+
+  const noteComments=p.notes.length?p.notes.map((n,i)=>{
+    const status=n.done?'[완료]':'[미완]';
+    return `  ${i+1}. [${TL[n.tag]||n.tag}] ${status} ${n.text}`;
+  }).join('\n'):'  (메모 없음)';
+
+  const header=`<!--
+========================================
+  프로젝트 : ${proj?.name||''}
+  화면명   : ${p.name}
+  화면 ID  : ${p.screenId||''}
+  유형     : ${p.type==='screen'?'화면':'팝업'}
+  경로     : ${p.path||''}
+========================================
+  ■ 정책 메모 (개발 참고사항)
+${noteComments}
+========================================
+-->
+`;
+
+  const output=header+p.html;
+
+  const encoded='data:text/html;charset=utf-8,'+encodeURIComponent(output);
+  // 기존 내보내기 모달 제거
+  document.getElementById('exportModal')?.remove();
+  const modal=document.createElement('div');
+  modal.id='exportModal';
+  modal.style.cssText='position:fixed;inset:0;z-index:500;background:rgba(4,5,12,.85);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;';
+  const safeName=(p.screenId||p.name).replace(/[^a-zA-Z0-9가-힣_-]/g,'_');
+  modal.innerHTML=`<div style="background:#0f1117;border:1px solid #1e2235;border-radius:14px;padding:28px;width:500px;box-shadow:0 32px 80px rgba(0,0,0,.6);">
+    <div style="font-size:15px;font-weight:800;color:#e2e8f0;margin-bottom:8px;">↓ 개발용 내보내기</div>
+    <div style="font-size:12px;color:#8892b0;margin-bottom:18px;">아래를 클릭하면 HTML이 복사돼요. 메모장에 붙여넣고 <b style="color:#e2e8f0;">.html</b> 로 저장하세요.</div>
+    <div onclick="(function(){navigator.clipboard.writeText(${JSON.stringify(output)}).then(()=>{document.getElementById('exportModal').remove();toast('HTML 복사 완료! 메모장에 붙여넣고 .html로 저장하세요 😊');})})()" style="cursor:pointer;word-break:break-all;font-size:11px;color:#5b7ff7;background:#0a0b12;border:1px solid #1e2235;border-radius:8px;padding:12px;margin-bottom:18px;transition:.15s;" onmouseover="this.style.borderColor='rgba(91,127,247,.5)'" onmouseout="this.style.borderColor='#1e2235'">${safeName}.html — 클릭하면 HTML 복사</div>
+    <div style="display:flex;justify-content:flex-end;">
+      <button onclick="document.getElementById('exportModal').remove()" style="padding:7px 18px;border-radius:6px;background:#1e2235;border:1px solid #2e3350;color:#8892b0;font-size:12px;font-family:var(--fn);cursor:pointer;">닫기</button>
+    </div>
+  </div>`;
+  modal.onclick=e=>{if(e.target===modal)modal.remove();};
+  document.body.appendChild(modal);
+}
+
+function resetApiKey(){
+  const key=prompt('Google Gemini API 키 입력\n(aistudio.google.com → Get API Key → 무료)\n\n비워두면 초기화됩니다.');
+  if(key===null) return;
+  if(key.trim()){sessionStorage.setItem('gemini_key',key.trim());toast('API 키 저장됐어요!');}
+  else{sessionStorage.removeItem('gemini_key');toast('API 키 초기화됐어요.');}
+}
+
+// ── 초기화 ────────────────────────────────────────────────
+showList();
+</script>
+</body>
+</html>
